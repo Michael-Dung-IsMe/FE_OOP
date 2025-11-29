@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
-import { Box, Button, Modal, useTheme } from "@mui/material";
-import ExpenseForm from "../features/budget/components/ui/ExpenseForm";
+import { Box, Modal, useTheme } from "@mui/material";
+import BudgetForm from "../features/budget/components/ui/BudgetForm";
 import { tokens } from "../assets/theme";
 
 const style = {
@@ -16,20 +16,36 @@ const style = {
 };
 
 type BasicModalProps = {
-  content: ReactNode
+  content: ReactNode;
+  // Props cho BudgetForm
+  budgetTitle: string;
+  budgetLimit: number;
+  onBudgetUpdateSuccess?: () => void;
 }
 
-export default function BasicModal({ content }: BasicModalProps) {
+export default function BasicModal({ 
+  content, 
+  budgetTitle, 
+  budgetLimit,
+  onBudgetUpdateSuccess 
+}: BasicModalProps) {
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    // Callback sau khi đóng modal
+    if (onBudgetUpdateSuccess) {
+      onBudgetUpdateSuccess();
+    }
+  };
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   return (
     <>
-      <Button
+      {/* Button trigger modal - nhận content từ props */}
+      <Box
         sx={{
           backgroundColor: colors.primary[500],
           borderRadius: "1rem",
@@ -39,6 +55,7 @@ export default function BasicModal({ content }: BasicModalProps) {
           justifyContent: "start",
           padding: "1rem",
           width: "100%",
+          cursor: "pointer",
           "& .MuiBox-root": {
             alignItems: "center",
             display: "flex",
@@ -48,9 +65,12 @@ export default function BasicModal({ content }: BasicModalProps) {
             backgroundColor: `${colors.primary[700]} !important`,
           },
         }}
-        onClick={handleOpen}>
+        onClick={handleOpen}
+      >
         {content}
-      </Button>
+      </Box>
+
+      {/* Modal chứa BudgetForm */}
       <Modal
         open={open}
         onClose={handleClose}
@@ -58,7 +78,11 @@ export default function BasicModal({ content }: BasicModalProps) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <ExpenseForm />
+          <BudgetForm 
+            title={budgetTitle}
+            limit={budgetLimit}
+            onSuccess={handleClose}
+          />
         </Box>
       </Modal>
     </>

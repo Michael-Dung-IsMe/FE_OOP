@@ -1,6 +1,5 @@
 import axiosClient from "./axiosClient";
 
-
 // ==================== Types ====================
 export interface RegisterRequest {
   username: string;
@@ -10,7 +9,7 @@ export interface RegisterRequest {
 }
 
 export interface LoginRequest {
-  Email: string; // backend nhận email
+  Email: string;
   password: string;
 }
 
@@ -32,8 +31,35 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-  token: string;        // token từ email
+  token: string;
   newPassword: string;
+}
+
+// ==================== NEW: Change Password ====================
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+  success: boolean;
+}
+
+// ==================== NEW: Update User Profile ====================
+export interface UpdateUserRequest {
+  fullName?: string;
+  email?: string;
+}
+
+export interface UpdateUserResponse {
+  message: string;
+  success: boolean;
+  user?: {
+    id: number;
+    email: string;
+    fullName?: string;
+  };
 }
 
 // ==================== API Functions ====================
@@ -50,13 +76,13 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   return response.data;
 };
 
-// Đăng xuất (gọi axiosClient để invalidate token/session nếu cần)
+// Đăng xuất
 export const logout = async (): Promise<any> => {
   const response = await axiosClient.post('/auth/logout');
   return response.data;
 };
 
-// Yêu cầu quên mật khẩu (gửi link reset qua email - chưa tích hợp authentication nên không thực hiện được)
+// Yêu cầu quên mật khẩu
 export const forgotPassword = async (data: ForgotPasswordRequest): Promise<any> => {
   const response = await axiosClient.post('/auth/forgot-password', data);
   return response.data;
@@ -68,17 +94,47 @@ export const resetPassword = async (data: ResetPasswordRequest): Promise<any> =>
   return response.data;
 };
 
-// Làm mới access token nếu backend hỗ trợ refresh token
+// Làm mới access token
 export const refreshToken = async (): Promise<any> => {
   const response = await axiosClient.post('/auth/refresh-token');
   return response.data;
 };
 
+// ==================== NEW: Change Password (trong Settings) ====================
+/**
+ * Đổi mật khẩu cho user đã đăng nhập
+ * Endpoint: POST /api/auth/change-password
+ */
+export const changePassword = async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
+  const response = await axiosClient.post<ChangePasswordResponse>('/auth/change-password', data);
+  return response.data;
+};
 
-// Thêm access token vào header nếu có (khi lưu token trong localStorage hoặc redux)
+// ==================== NEW: Update User Profile ====================
+/**
+ * Cập nhật thông tin user (fullName)
+ * Endpoint: PUT /api/users/profile hoặc PATCH /api/users/profile
+ */
+export const updateUserProfile = async (data: UpdateUserRequest): Promise<UpdateUserResponse> => {
+  const response = await axiosClient.put<UpdateUserResponse>('/users/profile', data);
+  return response.data;
+};
+
+/**
+ * Lấy thông tin user hiện tại
+ * Endpoint: GET /api/users/profile
+ */
+export const getCurrentUser = async (): Promise<any> => {
+  const response = await axiosClient.get('/users/profile');
+  return response.data;
+};
+
+// ==================== Interceptors ====================
+
+// Thêm access token vào header
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken'); // hoặc lấy từ store
+    const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -87,7 +143,7 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Xử lý lỗi 401 toàn cục (token hết hạn)
+// Xử lý lỗi 401 toàn cục
 axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -101,10 +157,8 @@ axiosClient.interceptors.response.use(
         const newAccessToken = rs.accessToken;
         localStorage.setItem('accessToken', newAccessToken);
 
-        // Thử lại request ban đầu với token mới
         return axiosClient(originalRequest);
       } catch (refreshError) {
-        // Refresh thất bại → có thể redirect về login
         localStorage.removeItem('accessToken');
         window.location.href = '/login';
         return Promise.reject(refreshError);

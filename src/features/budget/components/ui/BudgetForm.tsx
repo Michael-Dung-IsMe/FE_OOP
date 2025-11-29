@@ -17,10 +17,9 @@ const validationSchema = yup.object().shape({
 });
 
 export type BudgetFormProps = {
-  title: string;       // Tên danh mục (Cố định)
-  limit: number;       // Giới hạn hiện tại (Có thể sửa)
+  title: string;          // Tên danh mục (Cố định)
+  limit: number;          // Giới hạn hiện tại (Có thể sửa)
   onSuccess?: () => void; // Callback khi update thành công (để đóng modal)
-  // currentAmount không cần truyền từ props nữa vì sẽ fetch mới
 }
 
 const BudgetForm = ({ title, limit, onSuccess }: BudgetFormProps) => {
@@ -61,14 +60,15 @@ const BudgetForm = ({ title, limit, onSuccess }: BudgetFormProps) => {
       const result = await updateBudgetLimit(title, values.limit);
 
       if (result.success) {
-        alert(result.message);
+        alert(result.message || "Cập nhật ngân sách thành công!");
         if (onSuccess) onSuccess(); // Đóng modal
       } else {
-        setSubmitError("Cập nhật thất bại. Vui lòng thử lại.");
+        setSubmitError(result.message || "Cập nhật thất bại. Vui lòng thử lại.");
       }
-    } catch (err) {
-      setSubmitError("Lỗi kết nối server.");
-      console.error(err);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || "Lỗi kết nối server.";
+      setSubmitError(errorMsg);
+      console.error("Update budget error:", err);
     } finally {
       setSubmitting(false);
     }
@@ -76,15 +76,16 @@ const BudgetForm = ({ title, limit, onSuccess }: BudgetFormProps) => {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", p: 4 }}>
         <CircularProgress />
+        <Typography variant="body1" sx={{ ml: 2 }}>Đang tải dữ liệu...</Typography>
       </Box>
     );
   }
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ textAlign: "center", mb: 3 }} >
+      <Typography variant="h4" sx={{ textAlign: "center", mb: 3, fontWeight: "bold" }}>
         Điều chỉnh ngân sách
       </Typography>
 
@@ -112,76 +113,126 @@ const BudgetForm = ({ title, limit, onSuccess }: BudgetFormProps) => {
             <Box sx={{ display: "flex", gap: 3, flexDirection: "column" }}>
               
               {/* Tên Danh Mục - Cố định */}
-              <TextField
-                fullWidth
-                variant="filled"
-                value={title}
-                disabled
-                InputProps={{ readOnly: true }}
-                inputProps={{ style: { textAlign: "center" } }}
-                sx={{
-                  backgroundColor: "rgba(0, 0, 0, 0.05)",
-                  "& .MuiFilledInput-input": {
-                    paddingTop: "14px !important",
-                    paddingBottom: "14px !important",
-                    textAlign: "center",
-                    display: "flex",
-                    alignItems: "center",
-                  }
-                }}
-              />
-              <Box sx={{ display: "flex", gap: 2 }}>
-                {/* Chi tiêu hiện tại - Lấy từ API - Cố định */}
+              <Box>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                  Danh mục
+                </Typography>
                 <TextField
                   fullWidth
                   variant="filled"
-                  value={currentAmount.toLocaleString()}
+                  value={title}
                   disabled
-                  InputProps={{
-                    readOnly: true,
-                    endAdornment: <InputAdornment position="end">k VNĐ</InputAdornment>,
-                  }}
-                  inputProps={{ style: { textAlign: "center" } }}
+                  InputProps={{ readOnly: true }}
                   sx={{
+                    backgroundColor: "rgba(0, 0, 0, 0.05)",
                     "& .MuiFilledInput-input": {
                       paddingTop: "14px !important",
                       paddingBottom: "14px !important",
                       textAlign: "center",
-                      display: "flex",
-                      alignItems: "center",
+                      fontWeight: "bold",
                     }
-                  }}
-                />
-                {/* Giới hạn ngân sách - Cho phép chỉnh sửa */}
-                <TextField
-                  fullWidth
-                  variant="filled"
-                  color="info"
-                  type="number"
-                  label="Giới hạn ngân sách"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  value={values.limit}
-                  name="limit"
-                  error={!!touched.limit && !!errors.limit}
-                  helperText={touched.limit && errors.limit}
-                  disabled={isSubmitting}
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">VNĐ</InputAdornment>,
                   }}
                 />
               </Box>
 
-              <Button 
-                type="submit" 
-                color="info" 
-                variant="contained" 
-                size="large"
-                disabled={isSubmitting}
-                startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
-              >
-                {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
-              </Button>
+              {/* Chi tiêu hiện tại và Giới hạn */}
+              <Box sx={{ display: "flex", gap: 2 }}>
+                {/* Chi tiêu hiện tại - Lấy từ API - Cố định */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    Chi tiêu hiện tại
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    variant="filled"
+                    value={currentAmount.toLocaleString()}
+                    disabled
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: <InputAdornment position="end">VNĐ</InputAdornment>,
+                    }}
+                    sx={{
+                      "& .MuiFilledInput-input": {
+                        paddingTop: "14px !important",
+                        paddingBottom: "14px !important",
+                        textAlign: "right",
+                        fontWeight: "bold",
+                      }
+                    }}
+                  />
+                </Box>
+
+                {/* Giới hạn ngân sách - Cho phép chỉnh sửa */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    Giới hạn ngân sách <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    variant="filled"
+                    color="info"
+                    type="number"
+                    placeholder="Nhập giới hạn"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    value={values.limit}
+                    name="limit"
+                    error={!!touched.limit && !!errors.limit}
+                    helperText={touched.limit && errors.limit}
+                    disabled={isSubmitting}
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end">VNĐ</InputAdornment>,
+                    }}
+                    sx={{
+                      "& .MuiFilledInput-input": {
+                        textAlign: "right",
+                      }
+                    }}
+                  />
+                </Box>
+              </Box>
+
+              {/* Hiển thị chênh lệch */}
+              <Box sx={{ 
+                p: 2, 
+                backgroundColor: values.limit >= currentAmount ? "success.light" : "error.light",
+                borderRadius: 1,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <Typography variant="body2" fontWeight="bold">
+                  Chênh lệch:
+                </Typography>
+                <Typography variant="h6" fontWeight="bold">
+                  {(values.limit - currentAmount).toLocaleString()} VNĐ
+                </Typography>
+              </Box>
+
+              {/* Buttons */}
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <Button 
+                  type="submit" 
+                  color="success" 
+                  variant="contained" 
+                  size="large"
+                  fullWidth
+                  disabled={isSubmitting}
+                  startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
+                >
+                  {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
+                </Button>
+                <Button 
+                  type="button"
+                  color="error" 
+                  variant="outlined" 
+                  size="large"
+                  onClick={onSuccess}
+                  disabled={isSubmitting}
+                >
+                  Hủy
+                </Button>
+              </Box>
             </Box>
           </form>
         )}

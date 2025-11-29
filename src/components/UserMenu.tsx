@@ -34,6 +34,11 @@ export default function UserMenu() {
   // Khởi tạo hook điều hướng
   const navigate = useNavigate();
 
+  // Lấy thông tin user từ localStorage để hiển thị Email
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
+  const userEmail = user?.email || "User"; // Fallback nếu không tìm thấy email
+
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -42,13 +47,18 @@ export default function UserMenu() {
     setAnchorElUser(null);
   };
 
+  // Hàm xử lý chuyển hướng tới trang Settings
+  const handleSettings = () => {
+    handleCloseUserMenu();
+    navigate("/settings");
+  };
+
   // Hàm xử lý sự kiện Logout
   const handleLogout = () => {
     // 1. Đóng menu
     handleCloseUserMenu();
 
     // 2. Xóa accessToken (và thông tin user nếu có)
-    // Bạn hãy thay 'accessToken' bằng tên key thực tế bạn đang lưu trong localStorage
     localStorage.removeItem("accessToken"); 
     localStorage.removeItem("user"); 
 
@@ -65,12 +75,13 @@ export default function UserMenu() {
         gap: 2,
       }}
     >
+      {/* Thay thế John Smith bằng userEmail */}
       <Typography
         variant="h6"
         color={colors.primary[100]}
         sx={{ display: { xs: "none", sm: "none", md: "flex" } }}
       >
-        John Smith
+        {userEmail}
       </Typography>
       <Tooltip title="">
         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -143,7 +154,8 @@ export default function UserMenu() {
         </MenuItem>
         <Divider />
         
-        <MenuItem onClick={handleCloseUserMenu}>
+        {/* Cập nhật sự kiện onClick để chuyển hướng tới Settings */}
+        <MenuItem onClick={handleSettings}>
           <ListItemIcon>
             <SettingsOutlinedIcon />
           </ListItemIcon>

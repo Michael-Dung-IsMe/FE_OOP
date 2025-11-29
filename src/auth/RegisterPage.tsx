@@ -4,7 +4,13 @@ import { Box, Card, Typography, TextField, Button, CircularProgress, Alert } fro
 import { register, RegisterRequest } from '../api/authApi';
 
 export default function RegisterPage() {
-    const [formData, setFormData] = useState<RegisterRequest>({ username: '', email: '', password: '', fullName: '' });
+    const [formData, setFormData] = useState<RegisterRequest>({ 
+        email: '', 
+        password: '', 
+        checkpassword: '',
+        fullName: ''
+    });
+    
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -15,12 +21,20 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (formData.password !== formData.checkpassword) {
+            setError("Mật khẩu nhập lại không khớp!");
+            return;
+        }
+
         setLoading(true);
         setError(null);
+        
         try {
-            await register(formData);
-            navigate('/login'); // Redirect to login after success
+            await register(formData)
+            alert("Đăng ký thành công! Vui lòng đăng nhập.");
+            navigate('/login'); 
         } catch (err: any) {
+            console.error("Register error:", err);
             setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
         } finally {
             setLoading(false);
@@ -45,15 +59,6 @@ export default function RegisterPage() {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <form onSubmit={handleSubmit}>
                 <TextField
-                    label="Tên đăng nhập"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    fullWidth
-                    margin="normal"
-                    required
-                />
-                <TextField
                     label="Email"
                     name="email"
                     type="email"
@@ -64,7 +69,16 @@ export default function RegisterPage() {
                     required
                 />
                 <TextField
-                    label="Mật khẩu"
+                    label="Họ và tên"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    fullWidth
+                    margin="normal"
+                    placeholder="Nhập đầy đủ họ tên"
+                />
+                <TextField
+                    label="Mật khẩu (tối thiểu 6 ký tự)"
                     name="password"
                     type="password"
                     value={formData.password}
@@ -74,13 +88,17 @@ export default function RegisterPage() {
                     required
                 />
                 <TextField
-                    label="Họ và tên (tùy chọn)"
-                    name="fullName"
-                    value={formData.fullName}
+                    label="Nhập lại mật khẩu"
+                    name="checkpassword"
+                    type="password"
+                    value={formData.checkpassword}
                     onChange={handleChange}
                     fullWidth
                     margin="normal"
+                    required
+                    error={formData.password !== formData.checkpassword && formData.checkpassword !== ''}
                 />
+                
                 <Button
                     type="submit"
                     variant="contained"

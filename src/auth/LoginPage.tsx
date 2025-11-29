@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Box, Card, Typography, TextField, Button, CircularProgress, Alert } from '@mui/material';
-import { login, LoginRequest } from '../api/authApi'; // Adjust path if needed
+import { login, LoginRequest } from '../api/authApi';
+import { ACCESS_TOKEN_KEY } from '../api/axiosClient'; // Import key thống nhất để tránh sai sót
 
 export default function LoginPage() {
-    const [formData, setFormData] = useState<LoginRequest>({ Email: '', password: '' });
+    const [formData, setFormData] = useState<LoginRequest>({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -19,10 +20,16 @@ export default function LoginPage() {
         setError(null);
         try {
             const res = await login(formData);
-            localStorage.setItem('accessToken', res.accessToken || '');
-            navigate('/dashboard');
+            if (res.token) {
+                localStorage.setItem(ACCESS_TOKEN_KEY, res.token);
+                // Lưu thêm email để hiển thị nhanh trên UI nếu cần
+                localStorage.setItem('userEmail', res.email);
+            }
+            navigate('/dashboard'); 
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+            console.error("Login failed:", err);
+            const message = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -35,7 +42,7 @@ export default function LoginPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: 'background.default', // Sync with your theme
+            bgcolor: 'background.default',
             p: 2,
         }}
         >
@@ -47,8 +54,8 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit}>
                 <TextField
                     label="Email"
-                    name="Email"              // phải trùng với key trong LoginRequest
-                    value={formData.Email}
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
                     fullWidth
                     margin="normal"

@@ -1,7 +1,3 @@
-// - baseURL dùng chung cho mọi API
-// - Request: tự động gắn auth token nếu có
-// - Response: trả về nguyên response (authApi, ... tự .data)
-
 import axios, { AxiosInstance } from "axios";
 
 // ================== BASE URL & REST URL ==================
@@ -22,30 +18,32 @@ const axiosClient: AxiosInstance = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
-    withCredentials: true, // nếu BE dùng cookie / HttpOnly cookie
+    // withCredentials: true, // Bật nếu backend yêu cầu cookie
 });
 
 // ================== INTERCEPTORS ==================
 
-// Gắn Bearer token vào mọi request nếu có
 axiosClient.interceptors.request.use(
     (config) => {
+        /*
         const token = localStorage.getItem(ACCESS_TOKEN_KEY);
         if (token) {
-        // đảm bảo headers tồn tại
             config.headers = config.headers ?? {};
             (config.headers as any).Authorization = `Bearer ${token}`;
         }
+        */
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// Trả về nguyên response để các API layer tự xử lý .data
 axiosClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Trả về response.data nếu có, hoặc nguyên response
+        return response;
+    },
     (error) => {
-        // có thể log / xử lý chung ở đây nếu muốn
+        // Có thể log lỗi ra console hoặc xử lý logic refresh token nếu cần sau này
         return Promise.reject(error);
     }
 );

@@ -12,7 +12,6 @@ import Budget from "./features/budget";
 import Expense from "./features/expense";
 import Reports from "./features/reports";
 import Settings from "./features/settings";
-// import Investments from "./features/investments";
 import Overview from "./features/overview";
 import Error from "./pages/Error";
 
@@ -32,11 +31,10 @@ const router = createHashRouter(
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} errorElement={<Error />} />
 
       <Route path="/" element={<Dashboard />} errorElement={<Error />}>
-        <Route path="/" element={<Overview />} />
+        <Route path="/dashboard" element={<Overview />} />
         <Route path="/expenses" element={<Expense />} />
         <Route path="/budget" element={<Budget />} />
         <Route path="/reports" element={<Reports />} />
-        {/* <Route path="/investments" element={<Investments />} /> */}
         <Route path="/settings" element={<Settings />} />
       </Route>
     </>

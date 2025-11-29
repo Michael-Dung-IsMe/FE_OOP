@@ -8,4 +8,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['ts-big-decimal']
   },
+  // Thêm cấu hình server proxy tại đây
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080', // Địa chỉ Backend của bạn
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

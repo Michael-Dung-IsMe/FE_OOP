@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import {
   Avatar,
-  Badge,
   Box,
   Divider,
   IconButton,
@@ -12,12 +11,13 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+// Import hook useNavigate để chuyển trang
+import { useNavigate } from "react-router-dom";
+
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-// import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-// import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
@@ -30,6 +30,9 @@ export default function UserMenu() {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
+  
+  // Khởi tạo hook điều hướng
+  const navigate = useNavigate();
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -37,6 +40,20 @@ export default function UserMenu() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  // Hàm xử lý sự kiện Logout
+  const handleLogout = () => {
+    // 1. Đóng menu
+    handleCloseUserMenu();
+
+    // 2. Xóa accessToken (và thông tin user nếu có)
+    // Bạn hãy thay 'accessToken' bằng tên key thực tế bạn đang lưu trong localStorage
+    localStorage.removeItem("accessToken"); 
+    localStorage.removeItem("user"); 
+
+    // 3. Chuyển hướng về trang login
+    navigate("/login");
   };
   
   return (
@@ -57,7 +74,7 @@ export default function UserMenu() {
       </Typography>
       <Tooltip title="">
         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-          <Avatar alt="Remy Sharp" src={userImage} />
+          <Avatar alt="User Avatar" src={userImage} />
         </IconButton>
       </Tooltip>
       <Menu
@@ -81,51 +98,19 @@ export default function UserMenu() {
         open={Boolean(anchorElUser)}
         onClose={handleCloseUserMenu}
       >
-        <MenuItem
-          sx={{
-            display: { xs: "flex", sm: "flex", md: "none" },
-            justifyContent: "space-between",
-          }}
-        >
-          <p>Messages</p>
-          <IconButton
-            size="large"
-            aria-label="show 4 new mails"
-            color="inherit"
-          >
-            <Badge badgeContent={4} color="error" />
-          </IconButton>
-        </MenuItem>
-        <MenuItem
-          sx={{
-            display: { xs: "flex", sm: "flex", md: "none" },
-            justifyContent: "space-between",
-          }}
-        >
-          <p>Notifications</p>
-          <IconButton
-            size="large"
-            aria-label="show 17 new notifications"
-            color="inherit"
-          >
-            <Badge badgeContent={17} color="error" />
-          </IconButton>
-        </MenuItem>
         <Divider sx={{ display: { xs: "flex", sm: "flex", md: "none" } }} />
-        <MenuItem>
+        <MenuItem onClick={handleCloseUserMenu}>
           <ListItemIcon>
             <PersonOutlinedIcon />
           </ListItemIcon>
           <Typography variant="h5">My Profile</Typography>
         </MenuItem>
-        {/* <MenuItem>
-          <ListItemIcon>
-            <ManageAccountsOutlinedIcon />
-          </ListItemIcon>
-          <Typography variant="h5">Manage Account(s)</Typography>
-        </MenuItem> */}
+        
         <MenuItem
-          onClick={colorMode.toggleColorMode}
+          onClick={() => {
+            colorMode.toggleColorMode();
+            handleCloseUserMenu(); // Đóng menu sau khi chọn
+          }}
           sx={{
             display: { xs: "flex", sm: "flex", md: "none" },
           }}
@@ -146,6 +131,7 @@ export default function UserMenu() {
           </Typography>
         </MenuItem>
         <MenuItem
+          onClick={handleCloseUserMenu}
           sx={{
             display: { xs: "flex", sm: "flex", md: "none" },
           }}
@@ -156,19 +142,16 @@ export default function UserMenu() {
           <Typography variant="h5">Information</Typography>
         </MenuItem>
         <Divider />
-        {/* <MenuItem>
-          <ListItemIcon>
-            <PersonAddOutlinedIcon />
-          </ListItemIcon>
-          <Typography variant="h5">Add another account</Typography>
-        </MenuItem> */}
-        <MenuItem>
+        
+        <MenuItem onClick={handleCloseUserMenu}>
           <ListItemIcon>
             <SettingsOutlinedIcon />
           </ListItemIcon>
           <Typography variant="h5">Settings</Typography>
         </MenuItem>
-        <MenuItem>
+        
+        {/* Gắn sự kiện handleLogout vào MenuItem này */}
+        <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutOutlinedIcon />
           </ListItemIcon>

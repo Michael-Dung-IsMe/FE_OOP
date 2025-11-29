@@ -1,44 +1,52 @@
-// Contains axios instance with default settings
-// Request: automatically include auth token if available
-// Response: automatically get data from response and handle errors
+// - baseURL dùng chung cho mọi API
+// - Request: tự động gắn auth token nếu có
+// - Response: trả về nguyên response (authApi, ... tự .data)
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from "axios";
 
-export const API_BASE_URL = 'http://localhost:8080/api';
+// ================== BASE URL & REST URL ==================
+
+export const API_BASE_URL = "http://localhost:8080/api";
 export const USER_REST_API_URL = `${API_BASE_URL}/users`;
 export const AUTH_REST_API_URL = `${API_BASE_URL}/auth`;
 export const EXPENSE_REST_API_URL = `${API_BASE_URL}/expenses`;
 export const BUDGET_REST_API_URL = `${API_BASE_URL}/budgets`;
 export const REPORT_REST_API_URL = `${API_BASE_URL}/reports`;
 
-const axiosClient = axios.create({
-    baseURL: 'http://localhost:8080/api/auth/login', // Đường dẫn tới Backend Spring Boot
+export const ACCESS_TOKEN_KEY = 'accessToken';
+
+// ================== AXIOS INSTANCE ==================
+
+const axiosClient: AxiosInstance = axios.create({
+    baseURL: API_BASE_URL,
     headers: {
-        'Content-Type': 'application/json', // Báo cho BE biết dữ liệu gửi đi là JSON
+        "Content-Type": "application/json",
     },
+    withCredentials: true, // nếu BE dùng cookie / HttpOnly cookie
 });
 
-// Interceptor để tự động gắn Token vào mỗi request (nếu đã đăng nhập)
-axiosClient.interceptors.request.use(async (config) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+// ================== INTERCEPTORS ==================
 
-// Interceptor để xử lý dữ liệu trả về (Bóc tách dữ liệu)
-axiosClient.interceptors.response.use(
-    (response) => {
-        if (response && response.data) {
-        return response.data; // Chỉ lấy phần data của JSON
-            
+// Gắn Bearer token vào mọi request nếu có
+axiosClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+        if (token) {
+        // đảm bảo headers tồn tại
+            config.headers = config.headers ?? {};
+            (config.headers as any).Authorization = `Bearer ${token}`;
         }
-        return response;
+        return config;
     },
+    (error) => Promise.reject(error)
+);
+
+// Trả về nguyên response để các API layer tự xử lý .data
+axiosClient.interceptors.response.use(
+    (response) => response,
     (error) => {
-        
-        throw error;
+        // có thể log / xử lý chung ở đây nếu muốn
+        return Promise.reject(error);
     }
 );
 

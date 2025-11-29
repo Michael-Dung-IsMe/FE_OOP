@@ -69,6 +69,6 @@ function DataTable() {
 
 export default function TransactionHistory() {
   return (
-    <Item title="Transaction History" content={<DataTable />} height={500} />
+    <Item title="Lịch sử giao dịch" content={<DataTable />} height={500} />
   );
 }

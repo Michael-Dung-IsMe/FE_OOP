@@ -3,16 +3,13 @@ import {
   Menu,
   MenuProps,
   MenuItem,
-  Divider,
   IconButton,
   styled,
   alpha,
 } from "@mui/material";
 import {
   Edit,
-  Archive,
-  FileCopy,
-  MoreHoriz,
+  Delete,
   MoreVert,
 } from "@mui/icons-material";
 
@@ -59,14 +56,36 @@ const StyledMenu = styled((props: MenuProps) => (
   },
 }));
 
-export default function ContextMenu() {
+type ContextMenuProps = {
+  onEdit?: () => void;
+  onDelete?: () => void;
+};
+
+export default function ContextMenu({ onEdit, onDelete }: ContextMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  
   const handleClick = (event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation(); // Ngăn event bubble lên DataGrid row
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    handleClose();
+    if (onEdit) {
+      onEdit();
+    }
+  };
+
+  const handleDelete = () => {
+    handleClose();
+    if (onDelete) {
+      onDelete();
+    }
   };
 
   return (
@@ -77,6 +96,7 @@ export default function ContextMenu() {
         aria-haspopup="true"
         aria-expanded={open ? "true" : undefined}
         onClick={handleClick}
+        size="small"
       >
         <MoreVert />
       </IconButton>
@@ -89,22 +109,13 @@ export default function ContextMenu() {
         open={open}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleClose} disableRipple>
+        <MenuItem onClick={handleEdit} disableRipple>
           <Edit />
-          Edit
+          Chỉnh sửa
         </MenuItem>
-        <MenuItem onClick={handleClose} disableRipple>
-          <FileCopy />
-          Duplicate
-        </MenuItem>
-        <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={handleClose} disableRipple>
-          <Archive />
-          Archive
-        </MenuItem>
-        <MenuItem onClick={handleClose} disableRipple>
-          <MoreHoriz />
-          More
+        <MenuItem onClick={handleDelete} disableRipple>
+          <Delete />
+          Xóa
         </MenuItem>
       </StyledMenu>
     </>

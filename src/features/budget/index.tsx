@@ -1,15 +1,15 @@
 import { Box, Grid, Typography } from "@mui/material";
 import BudgetAllocation from "./components/BudgetAllocation";
-import IncomeSources from "./components/IncomeSources";
-import ExpenseLimits from "./components/ExpenseLimits";
-import Savings from "./components/Savings";
+// import IncomeSources from "./components/IncomeSources";
+import ExpenseLimits from "./components/BudgetLimits";
+// import Savings from "./components/Savings";
 
 export default function Budget() {
   return (
     <>
       <Box sx={{ padding: 2 }}>
         <Box sx={{ paddingBlock: 2 }}>
-          <Typography variant="h1">Ngân sách</Typography>
+          <Typography variant="h1">NGÂN SÁCH</Typography>
           <Typography variant="h6">Theo dõi và kiểm soát chi tiêu của bạn</Typography>
         </Box>
         <Grid container spacing={2} >

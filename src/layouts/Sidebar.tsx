@@ -6,9 +6,7 @@ import {
   DataUsageOutlined,
   RequestQuoteOutlined,
   AssessmentOutlined,
-  SwapVertOutlined,
-  AttachMoneyOutlined,
-  AccountBalanceOutlined,
+  // AttachMoneyOutlined,
   MenuOutlined,
   SettingsOutlined,
 } from "@mui/icons-material";
@@ -130,13 +128,6 @@ export default function Sidebar() {
               style={{ color: colors.grey[100] }}
               text="Ngân sách"
             />
-            {/* <MenuLink
-              icon={<RequestQuoteOutlined />}
-              onClick={handleClick}
-              linkTo="/bills"
-              style={{ color: colors.grey[100] }}
-              text="Bills"
-            /> */}
             <MenuLink
               icon={<AssessmentOutlined />}
               onClick={handleClick}
@@ -145,25 +136,11 @@ export default function Sidebar() {
               text="Báo cáo"
             />
             {/* <MenuLink
-              icon={<SwapVertOutlined />}
-              onClick={handleClick}
-              linkTo="/debt"
-              style={{ color: colors.grey[100] }}
-              text="Debt Management"
-            /> */}
-            <MenuLink
               icon={<AttachMoneyOutlined />}
               onClick={handleClick}
               linkTo="/investments"
               style={{ color: colors.grey[100] }}
               text="Investments"
-            />
-            {/* <MenuLink
-              icon={<AccountBalanceOutlined />}
-              onClick={handleClick}
-              linkTo="/networth"
-              style={{ color: colors.grey[100] }}
-              text="Net Worth"
             /> */}
             <MenuLink
               icon={<SettingsOutlined />}
